@@ -20,8 +20,6 @@ import socketserver
 from socketserver import ThreadingTCPServer, BaseRequestHandler, TCPServer
 import argparse
 
-from config import UNSUPPORTED_IMAGE_TYPE_DATA
-
 # Attempt to import PIL - if it doesn't exist we won't be able to make use of
 # some performance enhancing goodness, but imageMe will still work fine
 PIL_ENABLED = False
