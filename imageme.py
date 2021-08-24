@@ -1,3 +1,5 @@
+#coding:utf-8
+
 #!/usr/bin/python
 """
 imageMe is a super simple image gallery server.
@@ -11,7 +13,9 @@ what's called.
 """
 
 # Dependencies
-import base64, io, os, re, sys, threading, SimpleHTTPServer, SocketServer
+import base64, io, os, re, sys, threading
+import socketserver
+from socketserver import ThreadingTCPServer, BaseRequestHandler, TCPServer
 # Attempt to import PIL - if it doesn't exist we won't be able to make use of
 # some performance enhancing goodness, but imageMe will still work fine
 PIL_ENABLED = False
@@ -429,12 +433,9 @@ def _run_server():
     # Configure allow_reuse_address to make re-runs of the script less painful -
     # if this is not True then waiting for the address to be freed after the
     # last run can block a subsequent run
-    SocketServer.TCPServer.allow_reuse_address = True
-    # Create the server instance
-    server = SocketServer.TCPServer(
-        ('', port),
-        SimpleHTTPServer.SimpleHTTPRequestHandler
-    )
+    socketserver.TCPServer.allow_reuse_address = True
+    # multi thread server
+    server = ThreadingTCPServer(('', port), BaseRequestHandler)
     # Print out before actually running the server (cheeky / optimistic, however
     # you want to look at it)
     print('Your images are at http://127.0.0.1:%d/%s' % (
