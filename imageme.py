@@ -18,6 +18,8 @@ import base64, io, os, re, sys, threading
 from http.server import BaseHTTPRequestHandler, HTTPServer, SimpleHTTPRequestHandler
 import socketserver
 from socketserver import ThreadingTCPServer, BaseRequestHandler, TCPServer
+import argparse
+
 # Attempt to import PIL - if it doesn't exist we won't be able to make use of
 # some performance enhancing goodness, but imageMe will still work fine
 PIL_ENABLED = False
@@ -39,7 +41,7 @@ INDEX_FILE_NAME = 'imageme.html'
 ## Regex for matching only image files
 IMAGE_FILE_REGEX = '^.+\.(png|jpg|jpeg|tif|tiff|gif|bmp)$'
 ## Images per row of the gallery tables
-IMAGES_PER_ROW = 5
+IMAGES_PER_ROW = args.image_per_row
 ## Resampling mode to use when thumbnailing
 RESAMPLE = None if not PIL_ENABLED else Image.NEAREST
 ## Width in pixels of thumnbails generated with PIL
@@ -111,7 +113,7 @@ def _create_index_file(
         '        <title>imageMe</title>'
         '        <style>',
         '            html, body {margin: 0;padding: 0;}',
-        '            .header {text-align: right;}',
+        '            .header {text-align: left; display: inline-block;}',
         '            .content {',
         '                padding: 3em;',
         '                padding-left: 4em;',
@@ -488,4 +490,7 @@ def serve_dir(dir_path):
 if __name__ == '__main__':
     # Generate indices and serve from the current directory downwards when run
     # as the entry point
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--images_per_row', '-i', type=int, default=10)
+    args = parser.parse_args()
     serve_dir('.')
