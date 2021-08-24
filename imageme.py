@@ -13,7 +13,9 @@ what's called.
 """
 
 # Dependencies
+from multiprocessing import Process
 import base64, io, os, re, sys, threading
+from http.server import BaseHTTPRequestHandler, HTTPServer, SimpleHTTPRequestHandler
 import socketserver
 from socketserver import ThreadingTCPServer, BaseRequestHandler, TCPServer
 # Attempt to import PIL - if it doesn't exist we won't be able to make use of
@@ -22,7 +24,7 @@ PIL_ENABLED = False
 try:
     print('Attempting to import from PIL...')
     from PIL import Image
-    PIL_ENABLED = True
+    PIL_ENABLED = False
     print('Success! Enjoy your supercharged imageMe.')
 except ImportError:
     print(
@@ -37,7 +39,7 @@ INDEX_FILE_NAME = 'imageme.html'
 ## Regex for matching only image files
 IMAGE_FILE_REGEX = '^.+\.(png|jpg|jpeg|tif|tiff|gif|bmp)$'
 ## Images per row of the gallery tables
-IMAGES_PER_ROW = 3
+IMAGES_PER_ROW = 5
 ## Resampling mode to use when thumbnailing
 RESAMPLE = None if not PIL_ENABLED else Image.NEAREST
 ## Width in pixels of thumnbails generated with PIL
@@ -49,14 +51,14 @@ class BackgroundIndexFileGenerator:
 
     def __init__(self, dir_path):
         self.dir_path = dir_path
-        self.thread = threading.Thread(target=self._process, args=())
-        self.thread.daemon = True
+        self.process = Process(target=self._process, args=())
+        self.process.daemon = True
 
     def _process(self):
         _create_index_files(self.dir_path)
 
     def run(self):
-        self.thread.start()
+        self.process.start()
 
 def _clean_up(paths):
     """
@@ -435,7 +437,7 @@ def _run_server():
     # last run can block a subsequent run
     socketserver.TCPServer.allow_reuse_address = True
     # multi thread server
-    server = ThreadingTCPServer(('', port), BaseRequestHandler)
+    server = ThreadingTCPServer(('', port), SimpleHTTPRequestHandler)
     # Print out before actually running the server (cheeky / optimistic, however
     # you want to look at it)
     print('Your images are at http://127.0.0.1:%d/%s' % (
